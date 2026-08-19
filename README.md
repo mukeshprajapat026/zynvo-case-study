@@ -437,7 +437,6 @@ zynvo-case-study/
 ## 🎯 Project Goals
 
 Zynvo is being developed with the following goals:
-
 * Provide simple anonymous communication
 * Make discovering new people easy
 * Give users control over profile visibility
@@ -482,7 +481,6 @@ Zynvo is currently under development. Features, architecture, database structure
 ### Mukesh Prajapat
 
 Full Stack Developer specializing in:
-
 * Laravel
 * PHP
 * Shopify

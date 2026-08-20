@@ -55,8 +55,14 @@ Public profile information includes:
 - Application photos
 
 Example:
-Private Name: Mukesh Kumar
-Application Name: Anonymous
+
+```text
+Private Name:
+Mukesh Kumar
+
+Application Name:
+Anonymous
+````
 
 The real name remains private while the anonymous nickname is displayed in the application.
 

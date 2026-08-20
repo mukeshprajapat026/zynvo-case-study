@@ -1,5 +1,3 @@
-Absolutely. Below is the **complete `README.md` file**, ready to copy-paste directly into your Zynvo case-study GitHub repository.
-
 ````markdown
 # 💜 Zynvo
 

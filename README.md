@@ -1,4 +1,3 @@
-````markdown
 # 💜 Zynvo
 
 ### Anonymous Social Chat Platform

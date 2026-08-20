@@ -56,7 +56,6 @@ Public profile information includes:
 
 Example:
 
-```text
 Private Name:
 Mukesh Kumar
 

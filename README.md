@@ -55,13 +55,8 @@ Public profile information includes:
 - Application photos
 
 Example:
-
-Private Name:
-Mukesh Kumar
-
-Application Name:
-Anonymous
-````
+Private Name: Mukesh Kumar
+Application Name: Anonymous
 
 The real name remains private while the anonymous nickname is displayed in the application.
 
@@ -73,7 +68,6 @@ Privacy is a core part of the Zynvo architecture.
 
 The platform separates private account information from public application profile information.
 
-```text
                     Zynvo User
                         │
             ┌───────────┴───────────┐
@@ -92,7 +86,6 @@ The platform separates private account information from public application profi
                                         │
                                         ▼
                                   user_photos
-```
 
 ### Private Google / Real Photo
 
@@ -112,13 +105,11 @@ The discovery API reads the matching preferences from the logged-in user's profi
 
 Example:
 
-```json
 {
     "lookingFor": "female",
     "ageRangeMin": 18,
     "ageRangeMax": 40
 }
-```
 
 These values are read from the authenticated user's profile rather than being required as query parameters.
 

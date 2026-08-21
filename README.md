@@ -1096,23 +1096,23 @@ Zynvo is currently in active development.
 ### Implemented
 
 ```text
-✅ Google/Firebase Authentication
-✅ User Management
-✅ Anonymous Profiles
-✅ User Profiles
-✅ User Photos
-✅ Device Tokens
-✅ User Discovery
-✅ Chat Room Creation
-✅ Chat Room Listing
-✅ Firebase Text Chat
-✅ Image Upload
-✅ Voice Upload
-✅ Private Chat Media Storage
+✅ Firebase authentication
+✅ User sync
+✅ Anonymous profiles
+✅ Profile photos
+✅ Discover
+✅ Age/gender matching
+✅ Skip
+✅ Already-chatting exclusion
 ✅ Favorites
-✅ Blocking
-✅ User Reporting
-✅ Admin Foundation
+✅ Block/unblock
+✅ Report
+✅ Chat rooms
+✅ Firebase text chat
+✅ Laravel media upload
+✅ Device tokens
+✅ Account deletion
+✅ Soft-delete/re-registration handling
 ```
 
 ### In Progress

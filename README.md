@@ -604,10 +604,6 @@ Selected application screenshots are included in this case study.
 
 ![Zynvo Profile](screenshots/profile.png)
 
-### Admin Panel
-
-###![Zynvo Admin Panel](screenshots/admin-dashboard.png)
-
 > Screenshot files are added as the case study documentation is finalized.
 
 ---

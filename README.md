@@ -1,8 +1,3 @@
-## Step 3 — Replace your `README.md`
-
-Now select **all existing content** inside the GitHub README editor and replace it with the updated version below.
-
-````markdown
 # 💜 Zynvo
 
 ### Anonymous Social Chat Platform

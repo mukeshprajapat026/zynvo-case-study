@@ -1,129 +1,105 @@
+## Step 3 — Replace your `README.md`
+
+Now select **all existing content** inside the GitHub README editor and replace it with the updated version below.
+
+````markdown
 # 💜 Zynvo
 
 ### Anonymous Social Chat Platform
 
 **Meet. Chat. Connect. Anonymously.**
 
-Zynvo is a privacy-focused social chat platform designed to help users discover and connect with new people while keeping their real identity private.
+Zynvo is a privacy-focused social chat platform designed to help users discover and connect with new people while maintaining control over the information they share.
 
-Users can discover compatible people based on age and gender preferences, create an anonymous public profile, and communicate through text, voice, and image-based conversations.
+Users can discover compatible people based on age and gender preferences, skip users they are not interested in, create chat rooms, exchange messages through Firebase, share images and voice messages, and use built-in favorite, block, and report functionality.
 
----
-
-## 🚧 Project Status
-
-**Active Development**
-
-Zynvo is currently under active development. The backend APIs, database architecture, authentication, discovery, chat rooms, media handling, favorites, blocking, reporting, and admin functionality are being implemented incrementally.
-
-The production application source code is maintained separately in a private repository.
+> 🚧 **Status:** Active Development
 
 ---
 
-# ✨ Features
+## ✨ Core Features
 
-## 👤 Anonymous Profiles
+### 👤 Anonymous Profiles
 
-Zynvo separates private account information from information displayed inside the application.
+Zynvo separates private account information from the public profile shown inside the application.
 
-### Private Account Information
+Private authentication information such as the user's real Google account name, email, and authentication information is stored separately from the public profile.
 
-The `users` table stores information such as:
+The public profile uses:
 
-- Real name
-- Email
-- Phone number
-- Google authentication information
-- Private profile photo
-- Account status
-- Authentication-related information
-
-This information is not exposed as the user's public application profile.
-
-### Public Application Profile
-
-The application uses a separate `user_profiles` table for profile information displayed to other users.
-
-Public profile information includes:
-
-- Anonymous nickname
-- Gender
+- Anonymous/display nickname
 - Age
-- Looking-for preference
-- Age range
+- Gender
+- Profile photos
+- Matching preferences
 - Online status
-- Application photos
 
-Example:
+Users do not need to expose their real Google identity to other users.
+
+---
+
+## 🔐 Privacy-Focused Architecture
+
+Zynvo follows a separation between **private account data** and **public profile data**.
 
 ```text
-Private Name:
-Mukesh Kumar
-
-Application Name:
-Anonymous
+                    User Authentication
+                           │
+                           ▼
+                     ┌───────────┐
+                     │   users   │
+                     │           │
+                     │ Real name │
+                     │ Email     │
+                     │ Firebase  │
+                     │ identity  │
+                     └─────┬─────┘
+                           │
+                           │ 1 : 1
+                           ▼
+                  ┌─────────────────┐
+                  │  user_profiles  │
+                  │                 │
+                  │ Nickname        │
+                  │ Age             │
+                  │ Gender          │
+                  │ Preferences     │
+                  │ Online status   │
+                  └────────┬────────┘
+                           │
+                           │ 1 : many
+                           ▼
+                    ┌────────────┐
+                    │ user_photos│
+                    │            │
+                    │ Public     │
+                    │ profile    │
+                    │ photos     │
+                    └────────────┘
 ````
 
-The real name remains private while the anonymous nickname is displayed in the application.
-
----
-
-# 🔐 Privacy
-
-Privacy is a core part of the Zynvo architecture.
-
-The platform separates private account information from public application profile information.
-
-```text
-                    Zynvo User
-                        │
-            ┌───────────┴───────────┐
-            │                       │
-            ▼                       ▼
-     Private Account          Public Profile
-            │                       │
-            ▼                       ▼
-         users                 user_profiles
-            │                       │
-            ├── real name           ├── nickname
-            ├── email               ├── gender
-            ├── phone               ├── age
-            ├── Google photo        ├── looking_for
-            └── private data        └── age preferences
-                                        │
-                                        ▼
-                                  user_photos
-```
-
-### Private Google / Real Photo
-
-The Google profile photo stored in the `users` table is treated as private.
-
-Photos displayed inside the application are stored separately in the `user_photos` table.
-
-This prevents the private Google profile image from automatically becoming the user's public application image.
+The real Google profile information is not used as the public Zynvo profile identity.
 
 ---
 
 # 🎯 User Discovery
 
-Zynvo provides a discovery system that searches for compatible users based on the authenticated user's profile preferences.
+Zynvo provides a discovery system based on the user's profile preferences.
 
-The discovery API reads the matching preferences from the logged-in user's profile.
+The discovery API automatically uses the authenticated user's profile settings rather than requiring the mobile application to send age and gender filters on every request.
 
-Example:
+### Discovery considers:
 
-```json
-{
-    "lookingFor": "female",
-    "ageRangeMin": 18,
-    "ageRangeMax": 40
-}
-```
+* Age range
+* Gender preference
+* Active users
+* Block relationships
+* Skipped users
+* Existing chat relationships
+* Deleted accounts
+* Account status
 
-These values are read from the authenticated user's profile rather than being required as query parameters.
-
-### Discovery Flow
+### Discovery flow
 
 ```text
 Google Login
@@ -137,325 +113,216 @@ Read Matching Preferences
      ▼
 Find Compatible Users
      │
-     ├──────────────┐
-     ▼              ▼
-   Chat            Skip
-     │
-     ▼
-Text / Voice / Image
-     │
-     ├────► Favorite
-     ├────► Block
-     └────► Report
+     ├───────────────┐
+     ▼               ▼
+   Chat             Skip
+     │               │
+     ▼               ▼
+ Firebase          Store Skip
+ Chat                │
+                     ▼
+              Exclude from
+               future discovery
 ```
-
-Users who already have an established chat relationship can be excluded from the discovery list.
-
-Blocked users can also be excluded from discovery.
 
 ---
 
-# 💬 Chat
+# ⏭️ Skip Users
 
-Zynvo uses a hybrid chat architecture.
+Users can skip another user from the discovery screen.
 
-## Text Messages
-
-Text conversations are handled directly through Firebase.
+A dedicated `user_skips` table stores the relationship:
 
 ```text
-Flutter App
-     │
-     ▼
-Firebase
-     │
-     ▼
-Other Flutter User
+user_id
+skipped_user_id
+created_at
+updated_at
 ```
-
-Text messages are not duplicated in the Laravel MySQL database.
-
-## Media Messages
-
-Images and voice messages are handled through the Laravel API.
-
-```text
-Flutter App
-     │
-     ▼
-Laravel API
-     │
-     ├── Private Storage
-     │
-     └── MySQL
-```
-
-The `messages` table stores metadata for uploaded media.
-
----
-
-# 💬 Chat Rooms
-
-Each conversation has a dedicated chat room.
-
-The `chat_rooms` table contains:
-
-```text
-chat_rooms
-├── id
-├── user1_id
-├── user2_id
-├── room_status
-├── blocked_by
-├── last_message_id
-├── last_message_at
-├── created_at
-└── updated_at
-```
-
-### Room Status
-
-Supported room statuses include:
-
-```text
-active
-blocked
-deleted
-```
-
-### Create Chat Room
-
-```http
-POST /api/v1/chat-rooms
-```
-
-Example request:
-
-```json
-{
-    "receiver_id": 9
-}
-```
-
-The API uses the internal `users.id` value to create the relationship.
-
-The backend can prevent duplicate chat rooms between the same two users.
-
-### Get Chat Rooms
-
-```http
-GET /api/v1/chat-rooms
-```
-
-The response contains the rooms belonging to the authenticated user and the other user's public profile information.
-
----
-
-# 🖼️ Image Sharing
-
-Users can send images inside a chat room.
-
-```text
-Flutter
-    │
-    │ multipart/form-data
-    ▼
-POST /api/v1/chat-rooms/{chatRoom}/media
-    │
-    ▼
-Laravel
-    │
-    ├── Validate file
-    ├── Generate unique filename
-    ├── Store private media
-    └── Create message record
-```
-
-The media upload endpoint supports media fields such as:
-
-```text
-media[]
-message_type
-```
-
-Each uploaded media file can create a separate message record.
-
----
-
-# 🎤 Voice Messages
-
-Voice messages are also uploaded through Laravel.
 
 Example:
 
 ```text
-message_type = voice
-media[] = voice.m4a
-voice_duration = 15
+User 32 → skips → User 9
 ```
 
-The database stores:
+After that, User 9 is excluded from User 32's discovery results.
 
-```text
-message_type
-file
-voice_duration
-sender_id
-receiver_id
-room_id
-```
-
-The actual media file is stored separately from the database.
+The database also prevents duplicate skip records.
 
 ---
 
-# 🗄️ Messages
+# 💬 Chat Architecture
 
-The `messages` table is used for chat-related media metadata and message information handled by the Laravel backend.
+Zynvo uses a hybrid chat architecture.
 
-Structure:
+### Text messaging
 
-```text
-messages
-├── id
-├── room_id
-├── sender_id
-├── receiver_id
-├── message_type
-├── message
-├── file
-├── voice_duration
-├── is_read
-├── deleted_at
-├── created_at
-└── updated_at
-```
-
-Supported message types include:
+Text messages are handled directly between the Flutter application and Firebase.
 
 ```text
-text
-image
-voice
+Flutter App
+     │
+     ▼
+  Firebase
+     │
+     ▼
+Text Messages
 ```
 
-Text messaging is handled through Firebase in the current architecture, while Laravel manages uploaded media and related database records.
+Laravel does not provide a REST API for sending normal text messages.
+
+### Chat rooms
+
+Laravel manages chat room relationships:
+
+```text
+User
+  │
+  ├── Chat Room
+  │      │
+  │      ├── User 1
+  │      └── User 2
+  │
+  └── Chat history
+```
+
+### Chat media
+
+Images and voice messages are uploaded through Laravel.
+
+```text
+Flutter App
+     │
+     │ multipart/form-data
+     ▼
+Laravel API
+     │
+     ▼
+Private Storage
+     │
+     ▼
+messages table
+```
+
+The database stores the media path and message metadata.
+
+---
+
+# 🖼️ Chat Media
+
+Supported chat media:
+
+* 🖼️ Images
+* 🎤 Voice messages
+
+The media upload API is:
+
+```http
+POST /api/v1/chat-rooms/{chatRoom}/media
+```
+
+The uploaded media is stored using a generated filename instead of the original filename.
+
+Example:
+
+```text
+chat-media/
+└── 12/
+    └── xK8s92LmPq4Tn7Yw.jpg
+```
+
+The media path is stored with the corresponding chat message.
 
 ---
 
 # ❤️ Favorites
 
-Users can add other users to their favorites.
+Users can add another user to their favorites.
 
-### Add Favorite
-
-```http
-POST /api/v1/favorites/{user}
-```
-
-### Remove Favorite
+### APIs
 
 ```http
-DELETE /api/v1/favorites/{user}
+GET    /api/v1/users/favorites
+POST   /api/v1/users/{user}/favorite
+DELETE /api/v1/users/{user}/favorite
 ```
 
-### Get Favorites
-
-```http
-GET /api/v1/favorites
-```
-
-Favorites are stored in:
-
-```text
-user_favorites
-├── id
-├── user_id
-├── favorite_user_id
-├── created_at
-└── updated_at
-```
-
-The relationship is directional:
-
-```text
-User A
-   │
-   └── favorite_user_id → User B
-```
-
-This means User A can favorite User B without requiring User B to favorite User A.
+Favorite relationships are stored separately from the main user account.
 
 ---
 
-# 🚫 Blocking
+# 🚫 Block System
 
 Users can block other users.
 
-The blocking relationship is stored in:
+### APIs
 
-```text
-user_blocks
+```http
+GET    /api/v1/users/blocked
+POST   /api/v1/users/{user}/block
+DELETE /api/v1/users/{user}/block
 ```
 
-Blocking can affect:
-
-* User discovery
-* Chat interaction
-* User visibility
-* Communication
-
-Chat rooms also support blocking:
-
-```text
-room_status = blocked
-blocked_by
-```
+Blocked users are excluded from discovery and cannot interact normally with the blocking user.
 
 ---
 
-# 🚩 Reporting
+# 🚩 Report System
 
-Users can report another user for moderation.
+Users can report another user from the application.
 
-Reports are stored in the `user_reports` table.
-
-```text
-user_reports
-├── id
-├── reporter_id
-├── reported_user_id
-├── reason
-├── description
-├── status
-├── reviewed_by
-├── reviewed_at
-├── admin_notes
-├── created_at
-└── updated_at
+```http
+POST /api/v1/users/{user}/report
 ```
 
-### Report Statuses
+Reports are stored for moderation and administrative review.
 
-```text
-pending
-reviewed
-resolved
-dismissed
+---
+
+# 👤 Profile Management
+
+Users can manage their public Zynvo profile.
+
+### Profile APIs
+
+```http
+GET /api/v1/user/profile
+PUT /api/v1/user/profile
 ```
 
-This allows administrators to review, resolve, or dismiss reports.
+### Profile photo APIs
+
+```http
+POST   /api/v1/user/photos
+DELETE /api/v1/user/photos/{photo}
+PUT    /api/v1/user/photos/{photo}/primary
+```
+
+Users can upload multiple profile photos and choose which photo is their primary profile photo.
+
+---
+
+# 🗑️ Account Deletion
+
+Zynvo uses soft deletion for user accounts.
+
+```http
+DELETE /api/v1/user/account
+```
+
+Deleted accounts remain in the database through Laravel's soft-delete mechanism while no longer being treated as active users.
+
+The system also supports registering again with the same email after an account has been deleted, creating a new active user account.
 
 ---
 
 # 🔔 Device Tokens
 
-Mobile devices register their Firebase Cloud Messaging device token with the Laravel API.
-
-### Register Device Token
+The mobile application registers its Firebase Cloud Messaging device token with Laravel.
 
 ```http
-POST /api/v1/device-token
+POST /api/v1/user/device-token
 ```
 
 Example request:
@@ -467,146 +334,220 @@ Example request:
 }
 ```
 
-Device tokens are stored in:
-
-```text
-device_tokens
-├── id
-├── user_id
-├── device_token
-├── platform
-├── created_at
-└── updated_at
-```
-
-A unique device token prevents duplicate device registrations.
-
-Supported platforms currently include:
-
-```text
-android
-ios
-web
-```
+Device tokens are stored separately from user account information.
 
 ---
 
 # 🔑 Authentication
 
-Zynvo uses separate authentication mechanisms for different application components.
-
-## Google / Firebase Authentication
-
-The mobile application uses Google authentication through Firebase.
+Zynvo uses Firebase Authentication for mobile users.
 
 ```text
-Flutter App
-     │
-     ▼
-Google Sign-In
-     │
-     ▼
+Flutter
+   │
+   ▼
 Firebase Authentication
-     │
-     ▼
+   │
+   ▼
 Firebase ID Token
-     │
-     ▼
-Laravel API
-     │
-     ▼
+   │
+   ▼
+Laravel Firebase Middleware
+   │
+   ▼
 Authenticated User
 ```
 
-The Laravel API verifies the authenticated user before protected endpoints are processed.
+The Laravel API extracts the authenticated Firebase user and synchronizes the account with the application's `users` table.
 
-The authenticated user is available to the controller through:
+---
 
-```php
-$request->attributes->get('authUser');
+# 🏗️ Architecture
+
+```text
+                    ┌──────────────────────┐
+                    │     Flutter App      │
+                    │                      │
+                    │  Authentication      │
+                    │  Profile             │
+                    │  Discovery           │
+                    │  Favorites           │
+                    │  Block               │
+                    │  Report              │
+                    │  Chat UI             │
+                    └──────────┬───────────┘
+                               │
+                ┌──────────────┴──────────────┐
+                │                             │
+                ▼                             ▼
+       ┌────────────────┐            ┌────────────────┐
+       │ Firebase       │            │ Laravel REST   │
+       │                │            │ API            │
+       │ Authentication │            │                │
+       │ Text Chat      │            │ User Sync      │
+       │ FCM            │            │ Profile        │
+       └────────────────┘            │ Discovery      │
+                                     │ Favorites      │
+                                     │ Block/Report   │
+                                     │ Chat Rooms     │
+                                     │ Media Upload   │
+                                     └───────┬────────┘
+                                             │
+                         ┌───────────────────┼───────────────────┐
+                         ▼                   ▼                   ▼
+                  ┌────────────┐      ┌────────────┐     ┌────────────┐
+                  │   MySQL    │      │  Private   │     │  Firebase  │
+                  │            │      │  Storage   │     │ Services   │
+                  │ Users      │      │            │     │            │
+                  │ Profiles   │      │ Chat Media │     │ Auth       │
+                  │ Photos     │      │            │     │ FCM        │
+                  │ Chats      │      └────────────┘     │ Chat       │
+                  │ Favorites  │                         └────────────┘
+                  │ Blocks     │
+                  │ Reports    │
+                  │ Skips      │
+                  └────────────┘
 ```
+
+---
+
+# 🗄️ Database Architecture
+
+The primary database is MySQL.
+
+### Core tables
+
+```text
+users
+│
+├── user_profiles
+├── user_photos
+├── device_tokens
+├── user_skips
+├── user_favorites
+├── user_blocks
+├── user_reports
+│
+└── chat_rooms
+      │
+      └── messages
+```
+
+### Main tables
+
+| Table            | Purpose                                        |
+| ---------------- | ---------------------------------------------- |
+| `users`          | Private account and authentication information |
+| `user_profiles`  | Public Zynvo profile                           |
+| `user_photos`    | Public profile photos                          |
+| `device_tokens`  | FCM device tokens                              |
+| `user_skips`     | Users skipped during discovery                 |
+| `user_favorites` | Favorite relationships                         |
+| `user_blocks`    | Block relationships                            |
+| `user_reports`   | User reports                                   |
+| `chat_rooms`     | User-to-user chat rooms                        |
+| `messages`       | Chat and media message metadata                |
+
+---
+
+# 🌐 API Structure
+
+All mobile APIs use the `/api/v1` prefix.
+
+## User
+
+```http
+POST   /api/v1/user/sync
+POST   /api/v1/user/device-token
+DELETE /api/v1/user/account
+```
+
+## Profile
+
+```http
+GET    /api/v1/user/profile
+PUT    /api/v1/user/profile
+POST   /api/v1/user/photos
+DELETE /api/v1/user/photos/{photo}
+PUT    /api/v1/user/photos/{photo}/primary
+```
+
+## Discovery
+
+```http
+GET  /api/v1/discover
+GET  /api/v1/users/{user}
+POST /api/v1/users/{user}/skip
+```
+
+## Chat
+
+```http
+GET  /api/v1/chat-rooms
+POST /api/v1/chat-rooms
+
+GET  /api/v1/chat-rooms/{chatRoom}/messages
+
+POST /api/v1/chat-rooms/{chatRoom}/media
+```
+
+## Favorites
+
+```http
+GET    /api/v1/users/favorites
+POST   /api/v1/users/{user}/favorite
+DELETE /api/v1/users/{user}/favorite
+```
+
+## Block
+
+```http
+GET    /api/v1/users/blocked
+POST   /api/v1/users/{user}/block
+DELETE /api/v1/users/{user}/block
+```
+
+## Reports
+
+```http
+POST /api/v1/users/{user}/report
+```
+
+---
+
+# 🛡️ Safety & Moderation
+
+Zynvo includes several features designed to create a safer social environment.
+
+* Anonymous public profiles
+* Age restrictions
+* User blocking
+* User reporting
+* Discovery filtering
+* Skipped-user filtering
+* Existing-chat filtering
+* Account status management
+* Soft deletion
+* Admin moderation
+* Private media storage
 
 ---
 
 # 🖥️ Admin Panel
 
-Zynvo includes a Laravel-based admin panel for platform management and moderation.
+Zynvo includes a Laravel-based administration panel.
 
-### Admin Capabilities
+### Admin functionality
 
-* Admin authentication
-* User management
-* User profile management
-* Blocked user management
-* User reports
-* Moderation
-* Account status management
-* Platform management
+* 🔐 Admin authentication
+* 👥 User management
+* 🚫 Blocked user management
+* 🚩 User report management
+* 👤 Profile management
+* 🛡️ Moderation
+* 📊 Platform management
 
-The admin panel uses Laravel's session-based web authentication.
-
-The mobile API authentication flow is handled separately.
-
----
-
-# 🏗️ System Architecture
-
-```text
-                         ┌──────────────────────┐
-                         │     Flutter App      │
-                         │                      │
-                         │  Google Login        │
-                         │  Profile             │
-                         │  Discovery           │
-                         │  Favorites           │
-                         │  Blocks              │
-                         │  Reports             │
-                         │  Chat                │
-                         └──────────┬───────────┘
-                                    │
-                     ┌──────────────┴──────────────┐
-                     │                             │
-                     ▼                             ▼
-              ┌──────────────┐              ┌──────────────┐
-              │ Laravel API  │              │   Firebase   │
-              │              │              │              │
-              │ Authentication│             │ Text Chat    │
-              │ Profiles     │              │ FCM          │
-              │ Discovery    │              │              │
-              │ Chat Rooms   │              └──────────────┘
-              │ Media        │
-              │ Favorites    │
-              │ Blocks       │
-              │ Reports      │
-              └──────┬───────┘
-                     │
-              ┌──────┴─────────┐
-              │                │
-              ▼                ▼
-        ┌────────────┐   ┌───────────────┐
-        │   MySQL    │   │ Private Media │
-        │  Database  │   │    Storage    │
-        └────────────┘   └───────────────┘
-
-
-                 ┌──────────────────────┐
-                 │    Laravel Admin     │
-                 │                      │
-                 │ User Management      │
-                 │ Reports              │
-                 │ Moderation           │
-                 └──────────────────────┘
-```
-
----
-
-# 🌐 Application Domains
-
-| Component | Domain                      |
-| --------- | --------------------------- |
-| Frontend  | `zynvo.syslotech.com`       |
-| API       | `zynvo-api.syslotech.com`   |
-| Admin     | `zynvo-admin.syslotech.com` |
+The admin interface uses Laravel's browser/session authentication while the mobile application uses Firebase authentication.
 
 ---
 
@@ -617,385 +558,184 @@ The mobile API authentication flow is handled separately.
 * Laravel
 * PHP
 * MySQL
-* REST API
-* Firebase Authentication
-* Laravel Authentication
-* JWT/API authentication where applicable
+* REST APIs
+* Laravel Eloquent
+* Laravel Soft Deletes
 
 ## Mobile
 
 * Flutter
-* Google Authentication
-* Firebase
-* REST API
-* Image upload
-* Voice message upload
-
-## Services
-
-* Firebase
+* Android
+* Firebase Authentication
+* Firebase Chat
 * Firebase Cloud Messaging
-* Private media storage
-* MySQL
+
+## Storage
+
+* Laravel private storage
+* Chat media storage
+* Profile photo storage
+
+## Authentication
+
+* Firebase Authentication
+* Firebase ID Tokens
+* Laravel authentication middleware
+* Laravel session authentication for admin
 
 ---
 
-# 🗄️ Database Architecture
+# 📱 Application Screens
 
-The primary application database is MySQL.
+Selected application screenshots are included in this case study.
 
-## Core Tables
-
-```text
-users
-user_profiles
-user_photos
-device_tokens
-
-chat_rooms
-messages
-
-user_favorites
-user_blocks
-user_reports
-
-notifications
-notification_logs
-settings
-```
-
-## User Architecture
-
-```text
-users
-  │
-  ├── user_profiles
-  │
-  ├── user_photos
-  │
-  ├── device_tokens
-  │
-  ├── user_favorites
-  │
-  ├── user_blocks
-  │
-  └── user_reports
-```
-
-## Chat Architecture
-
-```text
-users
-   │
-   ▼
-chat_rooms
-   │
-   ▼
-messages
-```
-
----
-
-# 👤 User Data Architecture
-
-Zynvo separates authentication/account information from public profile information.
-
-```text
-┌──────────────────────────────┐
-│            users             │
-├──────────────────────────────┤
-│ id                           │
-│ uid                          │
-│ name                         │
-│ email                        │
-│ password                     │
-│ phone_number                 │
-│ photo                         │
-│ gender                       │
-│ status                       │
-│ user_type                    │
-│ is_blocked                   │
-│ is_deleted                   │
-│ profile_status               │
-│ profile_status_at            │
-│ last_login_at                │
-│ deleted_at                   │
-│ deleted_by                   │
-│ created_at                   │
-│ updated_at                   │
-└──────────────┬───────────────┘
-               │
-               │ 1:1
-               ▼
-┌──────────────────────────────┐
-│        user_profiles         │
-├──────────────────────────────┤
-│ id                           │
-│ user_id                      │
-│ nickname                     │
-│ gender                       │
-│ age                          │
-│ looking_for                  │
-│ age_range_min                │
-│ age_range_max                │
-│ online_status                │
-│ status                       │
-│ created_at                   │
-│ updated_at                   │
-└──────────────┬───────────────┘
-               │
-               │ 1:N
-               ▼
-┌──────────────────────────────┐
-│         user_photos          │
-├──────────────────────────────┤
-│ id                           │
-│ user_id                      │
-│ photo_url                    │
-│ position                     │
-│ is_primary                   │
-│ created_at                   │
-│ updated_at                   │
-└──────────────────────────────┘
-```
-
----
-
-# 🖼️ Private Media Storage
-
-Chat media and private user information should not be exposed through unrestricted public URLs.
-
-Private media is stored outside the public web-accessible directory.
-
-Example:
-
-```text
-storage/app/
-│
-└── chat-media/
-    │
-    ├── 1/
-    │   ├── unique-file.jpg
-    │   └── unique-file.m4a
-    │
-    └── 2/
-        └── unique-file.jpg
-```
-
-Uploaded filenames are generated using unique random values to avoid filename collisions.
-
-For example:
-
-```php
-Str::random(20)
-```
-
-The database stores the media path rather than storing the actual binary file.
-
----
-
-# 📡 API Structure
-
-The API is versioned using:
-
-```text
-/api/v1
-```
-
-## Main API Modules
-
-```text
-Authentication
-User
-Profile
-Device Token
-Discovery
-Chat Rooms
-Chat Media
-Favorites
-Blocks
-Reports
-```
-
----
-
-# 📡 Chat APIs
-
-### Chat Rooms
-
-```http
-GET  /api/v1/chat-rooms
-POST /api/v1/chat-rooms
-```
-
-### Chat Messages
-
-```http
-GET /api/v1/chat-rooms/{chatRoom}/messages
-```
-
-Text messages are handled directly through Firebase in the current architecture.
-
-### Chat Media
-
-```http
-POST /api/v1/chat-rooms/{chatRoom}/media
-```
-
-The media API handles:
-
-* Image uploads
-* Voice uploads
-* Media validation
-* Private storage
-* Message metadata
-* Chat room last-message updates
-
----
-
-# 🔍 Discovery & Chat Relationship
-
-The discovery system is designed to avoid repeatedly showing users who already have an established chat relationship.
-
-Example:
-
-```text
-User A
-   │
-   ├── Discover User B
-   │
-   ├── Create Chat Room
-   │
-   └── Chat
-          │
-          ▼
-     User B can be
-     excluded from
-     future discovery
-```
-
-Blocked users can also be excluded from discovery.
-
-Favorites are maintained independently from chat relationships.
-
----
-
-# 🛡️ Safety & Moderation
-
-Zynvo includes several safety mechanisms:
-
-* User blocking
-* User reporting
-* Anonymous profiles
-* Private account information
-* Age restrictions
-* Account status management
-* Chat room blocking
-* Soft deletion
-* Admin moderation
-* Report review workflow
-
----
-
-# 📱 Screenshots
-
-Selected screenshots are included in the case-study repository.
-
-## Login
+### Login
 
 ![Zynvo Login](screenshots/login.png)
 
-## Discovery
+### Discovery
 
 ![Zynvo Discovery](screenshots/discovery.png)
 
-## Chat
+### Chat
 
 ![Zynvo Chat](screenshots/chat.png)
 
-## Chat List
+### Chat List
 
 ![Zynvo Chat List](screenshots/chat-list.png)
 
-## Profile
+### Profile
 
 ![Zynvo Profile](screenshots/profile.png)
 
-## Admin Panel
+### Admin Panel
 
 ![Zynvo Admin Panel](screenshots/admin-dashboard.png)
 
-> Screenshots may be updated as the application UI evolves.
+> Screenshot files are added as the case study documentation is finalized.
 
 ---
 
-# 🗺️ Development Roadmap
+# 🗺️ Development Progress
 
 ## Phase 1 — Foundation
 
 * [x] Laravel backend
 * [x] MySQL database
-* [x] Domain structure
-* [x] API structure
-* [x] User authentication
+* [x] API versioning
+* [x] Firebase authentication
+* [x] User synchronization
 * [x] Admin authentication
 * [x] Admin panel foundation
 
-## Phase 2 — Profile
+## Phase 2 — User Profile
 
-* [x] User profile
 * [x] Anonymous nickname
 * [x] Age
 * [x] Gender
-* [x] Profile preferences
-* [x] Application photos
-* [x] Private real/Google profile information
+* [x] Profile photos
+* [x] Primary profile photo
+* [x] Matching preferences
+* [x] Profile update
+* [x] Account deletion
 
 ## Phase 3 — Discovery
 
 * [x] User discovery
 * [x] Age filtering
 * [x] Gender filtering
-* [x] Profile-based preferences
-* [x] Blocked-user filtering
-* [x] Existing chat filtering
-* [x] Anonymous profile response
+* [x] Existing-chat exclusion
+* [x] Blocked-user exclusion
+* [x] Skipped-user exclusion
+* [x] User profile details
+* [x] Skip functionality
 
 ## Phase 4 — Chat
 
 * [x] Chat room creation
 * [x] Chat room listing
+* [x] Chat history API
 * [x] Firebase text messaging
-* [x] Image upload
-* [x] Voice upload
-* [x] Chat media storage
-* [x] Chat history architecture
-* [x] Room status management
+* [x] Image message upload
+* [x] Voice message upload
+* [x] Private chat media storage
 
-## Phase 5 — Social Features
+## Phase 5 — Social & Safety
 
 * [x] Favorites
-* [x] Block users
-* [x] Report users
+* [x] Block
+* [x] Unblock
+* [x] Report
+* [x] User moderation
+* [x] Device token management
 
-## Phase 6 — Safety & Moderation
+## Phase 6 — Production Readiness
 
-* [x] User reports
-* [x] Report statuses
-* [x] Admin moderation structure
-* [x] User restrictions
-* [x] Account status management
-
-## Phase 7 — Production
-
-* [ ] Push notification workflow
-* [ ] Private media access endpoints
-* [ ] Media optimization
 * [ ] Performance optimization
+* [ ] Media optimization
 * [ ] Monitoring
 * [ ] Analytics
 * [ ] Production hardening
 * [ ] Google Play release
+
+---
+
+# 🔒 Security Considerations
+
+Security and privacy are considered throughout the architecture.
+
+* Firebase authentication
+* Authentication middleware
+* Input validation
+* Laravel request validation
+* Soft deletion
+* Account status checks
+* Block checks
+* Report functionality
+* Private media storage
+* Generated media filenames
+* Sensitive authentication information kept separate from public profiles
+* Production credentials excluded from the repository
+
+The following are intentionally not included in this public case study:
+
+```text
+.env
+Firebase private keys
+Database credentials
+JWT secrets
+API keys
+Production passwords
+```
+
+---
+
+# 🚧 Project Status
+
+**Active Development**
+
+Zynvo is currently under active development.
+
+The core backend architecture, user management, anonymous profile system, discovery, social actions, chat rooms, Firebase messaging integration, and media upload functionality have been implemented.
+
+The architecture and UI may continue to evolve as the project moves toward production.
+
+---
+
+# 🎯 Project Goals
+
+Zynvo is designed around the following goals:
+
+* Provide anonymous social discovery
+* Protect users' real identities
+* Make discovering compatible people simple
+* Give users control over their public profile
+* Support multiple communication methods
+* Provide built-in safety and moderation tools
+* Build a scalable Laravel backend
+* Integrate Firebase services where real-time communication is required
+* Provide a clean mobile experience
 
 ---
 
@@ -1007,10 +747,11 @@ zynvo-case-study/
 ├── README.md
 │
 ├── docs/
-│   ├── admin-panel.md
-│   ├── api.md
+│   ├── case-study.md
 │   ├── architecture.md
 │   ├── database.md
+│   ├── api.md
+│   ├── admin-panel.md
 │   ├── privacy.md
 │   └── roadmap.md
 │
@@ -1027,107 +768,6 @@ zynvo-case-study/
 
 ---
 
-# 🎯 Project Goals
-
-Zynvo is being developed with the following goals:
-
-* Provide simple anonymous communication
-* Make discovering new people easy
-* Keep real user information private
-* Give users control over their public profile
-* Support text, voice, and image communication
-* Build safety and moderation into the platform
-* Create a scalable backend architecture
-* Separate private and public user data
-* Provide a clean mobile experience
-
----
-
-# 🔐 Security Considerations
-
-Security is considered throughout the application architecture.
-
-### Authentication & Authorization
-
-* Firebase ID token verification
-* Authentication middleware
-* Laravel authentication
-* Admin authorization
-* Protected API endpoints
-
-### Data Security
-
-* Password hashing
-* Request validation
-* Input validation
-* Private user information
-* Private media storage
-* Unique media filenames
-* Soft deletion
-
-### Platform Safety
-
-* User blocking
-* User reporting
-* Age restriction
-* Account status management
-* Admin moderation
-
-Production secrets are intentionally excluded from the public repository.
-
-The following must never be committed:
-
-```text
-.env
-Firebase private keys
-API secrets
-JWT secrets
-Database credentials
-Service account credentials
-Production passwords
-```
-
----
-
-# 🚧 Current Development Status
-
-Zynvo is currently in active development.
-
-### Implemented
-
-```text
-✅ Firebase authentication
-✅ User sync
-✅ Anonymous profiles
-✅ Profile photos
-✅ Discover
-✅ Age/gender matching
-✅ Skip
-✅ Already-chatting exclusion
-✅ Favorites
-✅ Block/unblock
-✅ Report
-✅ Chat rooms
-✅ Firebase text chat
-✅ Laravel media upload
-✅ Device tokens
-✅ Account deletion
-✅ Soft-delete/re-registration handling
-```
-
-### In Progress
-
-```text
-🔄 Push Notifications
-🔄 Private Media Access
-🔄 Production Optimization
-🔄 Monitoring
-🔄 Analytics
-🔄 Mobile UI Refinement
-```
-
----
-
 # 👨‍💻 Developer
 
 ## Mukesh Prajapat
@@ -1136,14 +776,30 @@ Full Stack Developer specializing in:
 
 * Laravel
 * PHP
+* REST API Development
 * Shopify
 * WordPress
-* REST APIs
 * JavaScript
 * React
-* Mobile application backends
-* API integrations
-* Payment integrations
+* Mobile Application Backends
+* Firebase Integrations
+* API Integrations
+* Payment Integrations
+
+### Project Focus
+
+For Zynvo, the primary development focus includes:
+
+* Laravel backend architecture
+* REST API development
+* MySQL database design
+* Firebase integration
+* Authentication
+* Anonymous profile architecture
+* Discovery logic
+* Chat infrastructure
+* Media handling
+* User safety features
 
 ---
 
@@ -1155,13 +811,10 @@ The actual Zynvo application source code is maintained separately in a private r
 
 ---
 
-# ⭐ About Zynvo
+# 💜 About Zynvo
 
 **Zynvo — Meet. Chat. Connect. Anonymously.**
 
-A privacy-focused social chat platform built around anonymous discovery, meaningful conversations, private user information, and user-controlled profile visibility.
+A privacy-focused social chat platform built around anonymous discovery, user-controlled profile visibility, real-time conversations, and built-in safety features.
 
-```
-
-**One important recommendation before you commit:** don't mark a feature `[x]` just because its database/controller exists. For the case study, `[x]` should mean you've actually tested the complete flow from the Flutter app through the API/Firebase and back. This will keep the README accurate as the project progresses.
-```
+````

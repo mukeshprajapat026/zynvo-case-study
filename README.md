@@ -1,5 +1,4 @@
 # 💜 Zynvo
-#### Anonymous Social Chat Platform
 
 ### Anonymous Social Chat Platform
 
@@ -583,7 +582,7 @@ The admin interface uses Laravel's browser/session authentication while the mobi
 
 # 📱 Application Screens
 
-Selected application screenshots are included in this case study.
+Screenshots demonstrating the implemented application functionality.
 
 ### Login
 
@@ -604,6 +603,10 @@ Selected application screenshots are included in this case study.
 ### Profile
 
 ![Zynvo Profile](screenshots/profile.png)
+
+### Admin Dashboard
+
+![Zynvo Admin](screenshots/admin-dashboard.png)
 
 > Screenshot files are added as the case study documentation is finalized.
 
@@ -739,12 +742,20 @@ zynvo-case-study/
 ├── README.md
 │
 ├── docs/
-│   ├── case-study.md
 │   ├── architecture.md
-│   ├── database.md
 │   ├── api.md
+│   ├── authentication.md
+│   ├── database.md
+│   ├── profile.md
+│   ├── discovery.md
+│   ├── chat.md
+│   ├── media-upload.md
+│   ├── favorites.md
+│   ├── blocking-reporting.md
+│   ├── account-deletion.md
 │   ├── admin-panel.md
-│   ├── privacy.md
+│   ├── frontend.md
+│   ├── security.md
 │   └── roadmap.md
 │
 ├── screenshots/
@@ -760,38 +771,49 @@ zynvo-case-study/
 
 ---
 
+# 🌐 Public Website
+
+Zynvo includes a public-facing website containing information, privacy,
+safety, legal, and account-management pages.
+
+### Public Pages
+
+| Page | Purpose |
+|------|---------|
+| `/` | Zynvo landing page |
+| `/about` | About the platform |
+| `/privacy-policy` | Privacy policy |
+| `/terms` | Terms & Conditions |
+| `/account-delete` | Account deletion information |
+| `/contact` | Contact information |
+| `/community-guidelines` | Community guidelines |
+| `/safety-guidelines` | Safety guidelines |
+| `/cookie-policy` | Cookie policy |
+| `/faq` | Frequently asked questions |
+
+---
+
 # 👨‍💻 Developer
 
 ## Mukesh Prajapat
 
-Full Stack Developer specializing in:
+Full Stack Developer focused on scalable web applications,
+REST APIs, Laravel backends, Shopify integrations, and Firebase-based systems.
 
-* Laravel
-* PHP
-* REST API Development
-* Shopify
-* WordPress
-* JavaScript
-* React
-* Mobile Application Backends
-* Firebase Integrations
-* API Integrations
-* Payment Integrations
+### Zynvo Development Focus
 
-### Project Focus
-
-For Zynvo, the primary development focus includes:
-
-* Laravel backend architecture
-* REST API development
-* MySQL database design
-* Firebase integration
-* Authentication
-* Anonymous profile architecture
-* Discovery logic
-* Chat infrastructure
-* Media handling
-* User safety features
+- Laravel backend architecture
+- REST API development
+- MySQL database design
+- Firebase Authentication
+- Firebase real-time messaging
+- Anonymous profile architecture
+- User discovery and matching logic
+- Chat room management
+- Media upload and private storage
+- User safety and moderation
+- Admin functionality
+- API and third-party integrations
 
 ---
 
